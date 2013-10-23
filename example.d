@@ -37,7 +37,7 @@ void embeddedExample() {
   // insert document
   auto doc = `{"a": 1}`;
   JSONValue jsonDoc = parseJSON(doc);
-  ulong id = colA.insert(jsonDoc);
+  uint id = colA.insert(jsonDoc);
 
   // update document
   auto updatedDoc = `{"b": "abcdefghijklmnopqrstuvwxyz"}`;

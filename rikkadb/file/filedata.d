@@ -14,18 +14,18 @@ immutable FILE_GROWTH_INCREMENTAL = 2<<23;  // 16MB
 class FileData {
 
   string name;
-  int f;
-  ulong append;
-  ulong size;
-  ulong growth;
+  uint f;
+  uint append;
+  uint size;
+  uint growth;
   MmFile mmap;
   ubyte[] buf;
 
-  this(string _name, ulong _growth) {
+  this(string _name, uint _growth) {
     name = _name;
     growth = _growth;
     f = open(name.toStringz, O_CREAT|O_RDWR, octal!"600");
-    size = cast(ulong) lseek(f, 0, 2);
+    size = cast(uint) lseek(f, 0, 2);
 
     if (size == 0) {
       checkSizeAndEnsure(_growth);
@@ -36,7 +36,7 @@ class FileData {
     buf = cast(ubyte[]) mmap[0 .. uint.max];
 
     // find append position
-    for(uint low = 0, mid = cast(uint)(size)/2, high = cast(uint)size;;) {
+    for(uint low = 0, mid = size/2, high = size;;) {
       if (high-mid == 1) {
     	if (buf[mid] == 0) {
     	  if (buf[mid-1] == 0) {
@@ -59,29 +59,29 @@ class FileData {
   }
 
   // Ensure the file has room for more data
-  bool checkSize(ulong more) {
+  bool checkSize(uint more) {
     return append+more <= size;
   }
 
   // Ensure the file ahs room for more data
-  void checkSizeAndEnsure(ulong more) {
+  void checkSizeAndEnsure(uint more) {
     if (append+more <= size) {
       return;
     }
 
-    size = lseek(f, 0, 2);
+    size = cast(uint) lseek(f, 0, 2);
 
     // grow the file incrementally
     ubyte[] zeroBuf;
     zeroBuf.length = FILE_GROWTH_INCREMENTAL;
-    for (ulong i = 0; i < growth; i+= FILE_GROWTH_INCREMENTAL) {
+    for (uint i = 0; i < growth; i+= FILE_GROWTH_INCREMENTAL) {
       ubyte[] slice;
       if (i > growth) {
-	slice = zeroBuf[0 .. cast(int)growth];
+	slice = zeroBuf[0 .. growth];
       } else {
 	slice = zeroBuf;
       }
-      core.sys.posix.unistd.write(f, slice, cast(int) growth);
+      core.sys.posix.unistd.write(f, slice, growth);
     }
     fsync(f);
 
@@ -146,4 +146,4 @@ unittest {
 }
 
 
-// version(unittest) void main() {}
+//version(unittest) void main() {}

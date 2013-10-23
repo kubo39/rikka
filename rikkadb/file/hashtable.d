@@ -10,11 +10,11 @@ import core.sync.mutex;
 import core.sync.rwmutex;
 
 
-immutable ulong HASH_TABLE_GROWTH  = 2<<26;  // Grows every 128MB
+immutable uint HASH_TABLE_GROWTH  = 2<<26;  // Grows every 128MB
 immutable ubyte ENTRY_VALID        = 1;
 immutable ubyte ENTRY_INVALID      = 0;
-immutable ulong ENTRY_SIZE         = 21;  // validity + hash key + value
-immutable ulong BUCKET_HEADER_SIZE = 10;  // next bucket
+immutable uint ENTRY_SIZE         = 21;  // validity + hash key + value
+immutable uint BUCKET_HEADER_SIZE = 10;  // next bucket
 immutable uint HASH_TABLE_REGION_SIZE = 1024 * 4; // 4KB per locking region
 
 
@@ -22,13 +22,13 @@ immutable uint HASH_TABLE_REGION_SIZE = 1024 * 4; // 4KB per locking region
 class HashTable {
 
   FileData f;
-  ulong bucketSize;
-  ulong hashBits;
-  ulong perBucket;
+  uint bucketSize;
+  uint hashBits;
+  uint perBucket;
   Mutex tableGrowMutex;
   ReadWriteMutex[] regionRWMutex;
 
-  this(string name, ulong _hashBits, ulong _perBucket) {
+  this(string name, uint _hashBits, uint _perBucket) {
     if (_hashBits < 1 || _perBucket < 1) {
       throw new InvalidHashTableParameterException("Invalid hash table parameter!");
     }
@@ -37,7 +37,7 @@ class HashTable {
     hashBits = _hashBits;
     perBucket = _perBucket;
     tableGrowMutex = new Mutex;
-    regionRWMutex.length = cast(uint) (f.size/HASH_TABLE_REGION_SIZE+1);
+    regionRWMutex.length = f.size/HASH_TABLE_REGION_SIZE+1;
     for (int i; i < regionRWMutex.length; ++i) {
       regionRWMutex[i] = new ReadWriteMutex;
     }
@@ -58,17 +58,17 @@ class HashTable {
   }
 
   // Return total number of buckets
-  ulong numberBuckets() {
+  uint numberBuckets() {
     return f.append / bucketSize;
   }
 
   // Return the number of next chained bucket
-  ulong nextBucket(ulong bucket) {
-    uint bucketAddr = cast(uint)(bucket * bucketSize);
-    if (bucketAddr < 0 || bucketAddr >= cast(ulong) f.buf.length) {
+  uint nextBucket(uint bucket) {
+    uint bucketAddr = bucket * bucketSize;
+    if (bucketAddr < 0 || bucketAddr >= f.buf.length) {
       return 0;
     } else {
-      ulong next = ubytesToUlong(f.buf[bucketAddr .. bucketAddr+cast(uint)BUCKET_HEADER_SIZE]);
+      uint next = cast(uint) ubytesToUlong(f.buf[bucketAddr .. bucketAddr+cast(uint)BUCKET_HEADER_SIZE]);
       if (next != 0 && next <= bucket) {
 	writeln("Loop detected in hashtable %s at bucket %d", f.name, bucket);
 	return 0;
@@ -82,10 +82,10 @@ class HashTable {
   }
 
   // Return the last bucket number in chain
-  ulong lastBucket(ulong bucket) {
-    ulong curr = bucket;
+  uint lastBucket(uint bucket) {
+    uint curr = bucket;
     while (true) {
-      ulong next = nextBucket(curr);
+      uint next = nextBucket(curr);
       if (next == 0) {
 	return curr;
       }
@@ -94,7 +94,7 @@ class HashTable {
   }
 
   // Grow a new bucket on the chain of buckets
-  void grow(ulong bucket) {
+  void grow(uint bucket) {
     tableGrowMutex.lock;
     scope(exit) tableGrowMutex.unlock;
 
@@ -107,7 +107,7 @@ class HashTable {
       f.checkSizeAndEnsure(bucketSize);
       // make more mutexes
       ReadWriteMutex[] moreMutexes;
-      moreMutexes.length = cast(int) (HASH_TABLE_GROWTH/HASH_TABLE_REGION_SIZE+1);
+      moreMutexes.length = HASH_TABLE_GROWTH/HASH_TABLE_REGION_SIZE+1;
       for (int i; i < moreMutexes.length; ++i) {
 	moreMutexes[i] = new ReadWriteMutex;
       }
@@ -117,36 +117,33 @@ class HashTable {
 	region.reader.unlock;
       }
     }
-    uint lastBucketAddr = cast(uint) (lastBucket(bucket) * bucketSize);
-    putUlongToUbytes(f.buf[lastBucketAddr .. lastBucketAddr+8], numberBuckets());
+    uint lastBucketAddr = lastBucket(bucket) * bucketSize;
+    putUlongToUbytes(f.buf[lastBucketAddr .. lastBucketAddr+8], cast(ulong) numberBuckets());
     f.append += bucketSize;
   }
 
   // Return a hash key to be used by hash table by masking non-key bits
-  ulong hashKey(ulong key) {
+  uint hashKey(uint key) {
     return key & ((1 << hashBits) - 1);
   }
 
   // Put a new key-value pair
-  void put(ulong key, ulong val) {
-    ulong bucket = hashKey(key);
-    ulong entry = 0L;
-    uint region = cast(uint) (bucket / HASH_TABLE_REGION_SIZE);
+  void put(uint key, uint val) {
+    uint bucket = hashKey(key);
+    uint entry = 0L;
+    uint region = bucket / HASH_TABLE_REGION_SIZE;
     ReadWriteMutex m = regionRWMutex[region];
     m.reader.lock;
     scope(exit) m.reader.unlock;
 
     while (true) {
-      uint entryAddr = cast(uint)(bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE);
+      uint entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
       // writeln(entryAddr);
 
       if (f.buf[entryAddr] != ENTRY_VALID) {
 	f.buf[entryAddr] = ENTRY_VALID;
-	debug { writeln(f.buf[entryAddr]); }
 	putUlongToUbytes(f.buf[entryAddr+1 .. entryAddr+11], key);
-	debug { writeln(f.buf[entryAddr+1 .. entryAddr+11]); }
 	putUlongToUbytes(f.buf[entryAddr+11 .. entryAddr+21], val);
-	debug { writeln(f.buf[entryAddr+11 .. entryAddr+21]); }
 	break;
       }
       entry++;
@@ -158,29 +155,29 @@ class HashTable {
 	  put(key, val);
 	  break;
 	}
-	region = cast(uint) (bucket / HASH_TABLE_REGION_SIZE);	
+	region = bucket / HASH_TABLE_REGION_SIZE;
 	m = regionRWMutex[region];
       }
     }
   }
 
   // Get key-value pairs
-  Tuple!(ulong[], ulong[]) get(ulong key, ulong limit, bool delegate(ulong, ulong) filter) {
-    ulong count;
-    ulong entry;
-    ulong bucket = hashKey(key);
-    ulong[] keys;
-    ulong[] vals;
+  Tuple!(uint[], uint[]) get(uint key, uint limit, bool delegate(uint, uint) filter) {
+    uint count;
+    uint entry;
+    uint bucket = hashKey(key);
+    uint[] keys;
+    uint[] vals;
 
-    auto region = cast(uint) (bucket / HASH_TABLE_REGION_SIZE);
+    auto region = bucket / HASH_TABLE_REGION_SIZE;
     auto m = regionRWMutex[region];
     m.reader.lock;
     scope(exit) m.reader.unlock;
 
     while (true) {
-      auto entryAddr = cast(uint)(bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE);
-      ulong entryKey = ubytesToUlong(f.buf[entryAddr+1 .. entryAddr+11]);
-      ulong entryVal = ubytesToUlong(f.buf[entryAddr+11 .. entryAddr+21]);
+      auto entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
+      uint entryKey = cast(uint)ubytesToUlong(f.buf[entryAddr+1 .. entryAddr+11]);
+      uint entryVal = cast(uint)ubytesToUlong(f.buf[entryAddr+11 .. entryAddr+21]);
       if (f.buf[entryAddr] == ENTRY_VALID) {
 	if (entryKey == key && filter(entryKey, entryVal)) {
 	  keys ~= entryKey;
@@ -200,27 +197,27 @@ class HashTable {
 	if (bucket == 0) {
 	  return tuple(keys, vals);
 	}
-	region = cast(uint) (bucket / HASH_TABLE_REGION_SIZE);
+	region = bucket / HASH_TABLE_REGION_SIZE;
 	m = regionRWMutex[region];
       }
     }
   }
 
   // remove specific key-calue pair
-  void remove(ulong key, ulong limit, bool delegate(ulong, ulong) filter) {
-    ulong count = 0L;
-    ulong entry = 0L;
-    ulong bucket = hashKey(key);
+  void remove(uint key, uint limit, bool delegate(uint, uint) filter) {
+    uint count = 0;
+    uint entry = 0;
+    uint bucket = hashKey(key);
 
-    auto region = cast(uint) (bucket / HASH_TABLE_REGION_SIZE);
+    auto region = bucket / HASH_TABLE_REGION_SIZE;
     auto m = regionRWMutex[region];
     m.reader.lock;
     scope(exit) m.reader.unlock;
 
     while (true) {
-      auto entryAddr = cast(uint)(bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE);
-      ulong entryKey = ubytesToUlong(f.buf[entryAddr+1 .. entryAddr+11]);
-      ulong entryVal = ubytesToUlong(f.buf[entryAddr+11 .. entryAddr+21]);
+      auto entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
+      uint entryKey = cast(uint)ubytesToUlong(f.buf[entryAddr+1 .. entryAddr+11]);
+      uint entryVal = cast(uint)ubytesToUlong(f.buf[entryAddr+11 .. entryAddr+21]);
       if (f.buf[entryAddr] == ENTRY_VALID) {
 	if (entryKey == key && filter(entryKey, entryVal)) {
 	  f.buf[entryAddr] = ENTRY_INVALID;
@@ -239,29 +236,29 @@ class HashTable {
 	if (bucket == 0) {
 	  return;
 	}
-	region = cast(uint) (bucket / HASH_TABLE_REGION_SIZE);
+	region = bucket / HASH_TABLE_REGION_SIZE;
 	m = regionRWMutex[region];
       }
     }
   }
 
-  Tuple!(ulong[], ulong[]) getAll(ulong limit) {
-    ulong[] keys;
-    ulong[] vals;
-    ulong counter;
+  Tuple!(uint[], uint[]) getAll(uint limit) {
+    uint[] keys;
+    uint[] vals;
+    uint counter;
 
-    for (ulong head=0L; head < cast(ulong) pow(2, cast(double)hashBits) ;++head) {
-      ulong entry = 0L;
-      ulong bucket = head;
-      uint region = cast(uint) (bucket / HASH_TABLE_REGION_SIZE);
+    for (uint head=0; head < cast(uint) pow(2, cast(double)hashBits) ;++head) {
+      uint entry = 0;
+      uint bucket = head;
+      uint region = bucket / HASH_TABLE_REGION_SIZE;
       auto m = regionRWMutex[region];
       m.reader.lock;
       scope(exit) m.reader.unlock;
 
       while (true) {
-	auto entryAddr = cast(uint)(bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE);
-	ulong entryKey = ubytesToUlong(f.buf[entryAddr+1 .. entryAddr+11]);
-	ulong entryVal = ubytesToUlong(f.buf[entryAddr+11 .. entryAddr+21]);
+	auto entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
+	uint entryKey = cast(uint)ubytesToUlong(f.buf[entryAddr+1 .. entryAddr+11]);
+	uint entryVal = cast(uint)ubytesToUlong(f.buf[entryAddr+11 .. entryAddr+21]);
 	if (f.buf[entryAddr] == ENTRY_VALID) {
 	  counter++;
 	  keys ~= entryKey;
@@ -279,7 +276,7 @@ class HashTable {
 	  if (bucket == 0) {
 	    break;
 	  }
-	  region = cast(uint) (bucket / HASH_TABLE_REGION_SIZE);
+	  region = bucket / HASH_TABLE_REGION_SIZE;
 	  m = regionRWMutex[region];
 	}
       }
@@ -316,13 +313,13 @@ unittest {
     auto ht = new HashTable(tmp, 2, 2);
     scope(exit) ht.f.close();
 
-    for (ulong i=0L; i < 30L; ++i) {
+    for (uint i=0; i < 30; ++i) {
       ht.put(i, i);
     }
-    for (ulong i=0L; i < 30L; ++i) {
-      auto t = ht.get(i, 0L, (ulong a, ulong b){ return true; });
-      ulong[] keys = t[0];
-      ulong[] vals = t[1];
+    for (uint i=0; i < 30; ++i) {
+      auto t = ht.get(i, 0, (uint a, uint b){ return true; });
+      uint[] keys = t[0];
+      uint[] vals = t[1];
       assert(keys.length == 1);
       assert(keys[0] == i);
       assert(vals.length == 1);
@@ -345,20 +342,20 @@ unittest {
     auto ht = new HashTable(tmp, 2, 2);
     scope(exit) ht.f.close();
 
-    ht.put(1L, 1L);
-    ht.put(1L, 2L);
-    ht.put(1L, 3L);
-    ht.put(2L, 1L);
-    ht.put(2L, 2L);
-    ht.put(2L, 3L);
+    ht.put(1, 1);
+    ht.put(1, 2);
+    ht.put(1, 3);
+    ht.put(2, 1);
+    ht.put(2, 2);
+    ht.put(2, 3);
 
-    auto t = ht.get(1L, 0L, (ulong a, ulong b) { return true; });
+    auto t = ht.get(1, 0, (uint a, uint b) { return true; });
     auto keys = t[0];
     auto vals = t[1];
     assert(keys.length == 3);
     assert(vals.length == 3);
 
-    auto t2 = ht.get(2L, 2L, (ulong a, ulong b) { return true; });
+    auto t2 = ht.get(2, 2, (uint a, uint b) { return true; });
     auto keys2 = t2[0];
     auto vals2 = t2[1];
     assert(keys2.length == 2);
@@ -380,23 +377,23 @@ unittest {
     auto ht = new HashTable(tmp, 2, 2);
     scope(exit) ht.f.close();
 
-    ht.put(1L, 1L);
-    ht.put(1L, 2L);
-    ht.put(1L, 3L);
-    ht.put(2L, 1L);
-    ht.put(2L, 2L);
-    ht.put(2L, 3L);
+    ht.put(1, 1);
+    ht.put(1, 2);
+    ht.put(1, 3);
+    ht.put(2, 1);
+    ht.put(2, 2);
+    ht.put(2, 3);
 
-    ht.remove(1L, 1L, (ulong a, ulong b) { return true; });
-    ht.remove(2L, 2L, (ulong a, ulong b) { return b >= 2; });
-    auto t = ht.get(1L, 0L, (ulong a, ulong b) { return true; });
+    ht.remove(1, 1, (uint a, uint b) { return true; });
+    ht.remove(2, 2, (uint a, uint b) { return b >= 2; });
+    auto t = ht.get(1, 0, (uint a, uint b) { return true; });
     auto keys = t[0];
     auto vals = t[1];
 
     assert(keys.length == 2);
     assert(vals.length == 2);
 
-    auto t2 = ht.get(2L, 0L, (ulong a, ulong b) { return true; });
+    auto t2 = ht.get(2, 0, (uint a, uint b) { return true; });
     auto keys2 = t2[0];
     auto vals2 = t2[1];
 
@@ -419,12 +416,12 @@ unittest {
     auto ht = new HashTable(tmp, 2, 2);
     scope(exit) ht.f.close();
 
-    ht.put(1L, 1L);
-    ht.put(1L, 2L);
-    ht.put(1L, 3L);
-    ht.put(2L, 1L);
-    ht.put(2L, 2L);
-    ht.put(2L, 3L);
+    ht.put(1, 1);
+    ht.put(1, 2);
+    ht.put(1, 3);
+    ht.put(2, 1);
+    ht.put(2, 2);
+    ht.put(2, 3);
 
     auto t = ht.getAll(0);
     auto keys = t[0];

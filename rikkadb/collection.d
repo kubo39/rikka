@@ -23,13 +23,13 @@ struct config {
 
 
 // Return string hash code
-ulong jsonToHash(JSONValue thing) {
+uint jsonToHash(JSONValue thing) {
   string str = toJSON(&thing);
-  auto h = 0;
+  uint h = 0;
   foreach (c; str) {
-    h = to!int(c) + (h<<6) + (h<<16) - h;
+    h = to!uint(c) + (h<<6) + (h<<16) - h;
   }
-  return cast(ulong)h;
+  return h;
 }
 
 
@@ -89,8 +89,9 @@ class Collection {
 
     foreach (i, index; conf.indexes) {
       auto obj = index.object;
-      auto ht = new HashTable(buildPath(dir, obj["fname"].str), obj["hashBits"].integer,
-				obj["perBucket"].integer);
+      auto ht = new HashTable(buildPath(dir, obj["fname"].str), 
+			      cast(uint) obj["hashBits"].uinteger,
+			      cast(uint) obj["perBucket"].uinteger);
       auto k = to!(string[])(toJSON(&obj["indexedPath"])).join(",");
       strHT[k] = ht;
       strIC[k] = index;
@@ -110,12 +111,12 @@ class Collection {
     return [thing];
   }
 
-  JSONValue read(ulong id) {
+  JSONValue read(uint id) {
     ubyte[] doc = data.read(id);
     return parseJSON(doc);
   }
 
-  void indexDoc(ulong id, JSONValue doc) {
+  void indexDoc(uint id, JSONValue doc) {
     foreach (k, v; strIC) {
       foreach (thing; getIn(doc, to!(string[])(toJSON(&(v.object["indexedPath"]))))) {
 	strHT[k].put(jsonToHash(thing), id);
@@ -124,21 +125,21 @@ class Collection {
   }
 
   // Remove the document from all indexes
-  void unindexDoc(ulong id, JSONValue doc) {
+  void unindexDoc(uint id, JSONValue doc) {
     foreach (k, v; strIC) {
       foreach (thing; getIn(doc, to!(string[])(toJSON(&(v.object["indexedPath"]))))) {
-	strHT[k].remove(jsonToHash(thing), 1L, (ulong k, ulong v) { return v == id; });
+	strHT[k].remove(jsonToHash(thing), 1, (uint k, uint v) { return v == id; });
       }
     }
   }
 
-  ulong insert(JSONValue doc) {
-    ulong id = data.insert(cast(ubyte[])toJSON(&doc));
+  uint insert(JSONValue doc) {
+    uint id = data.insert(cast(ubyte[])toJSON(&doc));
     indexDoc(id, doc);
     return id;
   }
 
-  ulong update(ulong id, JSONValue doc) {
+  uint update(uint id, JSONValue doc) {
     auto newData = toJSON(&doc);
 
     // read original document
@@ -150,15 +151,15 @@ class Collection {
     return newID;
   }
 
-  void del(ulong id) {
+  void del(uint id) {
     JSONValue oldDoc = read(id);
     data.del(id);
     unindexDoc(id, oldDoc);
   }
 
   // Apply function for all documents (deserialized into generic interface)
-  void forAll(bool delegate(ulong, JSONValue) func) {
-    data.forAll((ulong id, ubyte[] jsonData) {
+  void forAll(bool delegate(uint, JSONValue) func) {
+    data.forAll((uint id, ubyte[] jsonData) {
   	JSONValue parsed;
   	try {
   	  parsed = parseJSON(jsonData);
@@ -208,7 +209,7 @@ unittest {
     jsonDoc[0] = parseJSON(docs[0]);
     jsonDoc[1] = parseJSON(docs[1]);
 
-    ulong[2] ids;
+    uint[2] ids;
     ids[0] = col.insert(jsonDoc[0]);
     ids[1] = col.insert(jsonDoc[1]);
 
@@ -242,7 +243,7 @@ unittest {
     updatedJsonDoc[0] = parseJSON(updatedDocs[0]);
     updatedJsonDoc[1] = parseJSON(updatedDocs[1]);
 
-    ulong[2] ids;
+    uint[2] ids;
     ids[0] = col.insert(jsonDoc[0]);
     ids[1] = col.insert(jsonDoc[1]);
 
@@ -256,7 +257,7 @@ unittest {
     assert(doc2.object["b"].str == "abcdefghijklmnopqrstuvwxyz");
 
     int counter;
-    col.forAll((ulong id, JSONValue doc) {
+    col.forAll((uint id, JSONValue doc) {
 	counter++;
 	return true;
       });
@@ -283,7 +284,7 @@ unittest {
     jsonDoc[0] = parseJSON(docs[0]);
     jsonDoc[1] = parseJSON(docs[1]);
 
-    ulong[2] ids;
+    uint[2] ids;
     ids[0] = col.insert(jsonDoc[0]);
     ids[1] = col.insert(jsonDoc[1]);
 
@@ -302,4 +303,4 @@ unittest {
 }
 
 
-//version(unittest) void main() {}
+version(unittest) void main() {}
