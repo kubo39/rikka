@@ -3,7 +3,6 @@ module rikkadb.collection;
 import rikkadb.file.coldata;
 import rikkadb.file.hashtable;
 
-import std.algorithm;
 import std.array;
 import std.conv;
 import std.file;
