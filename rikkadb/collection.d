@@ -9,17 +9,11 @@ import std.file;
 import std.format;
 import std.json;
 import std.path;
-import std.stdio;
 import std.string;
 import std.typecons;
 import core.sys.posix.fcntl;
 import core.sys.posix.unistd;
 import core.sys.posix.sys.stat;
-
-
-struct config {
-  JSONValue[] indexes;
-}
 
 
 // Return string hash code
@@ -37,7 +31,7 @@ uint jsonToHash(JSONValue thing) {
 class Collection {
 
   ColData data;
-  config conf;
+  JSONValue[] configs;
   string dir;
   string configFileName;
   string configBackup;
@@ -55,7 +49,7 @@ class Collection {
     data = new ColData(buildPath(dir, "data"));
 
     // make sure the config file exists
-    auto tryOpen = open(configFileName.toStringz, O_CREAT|O_RDWR, octal!"600");
+    auto tryOpen = open(configFileName.toStringz, O_CREAT|O_RDWR, octal!"600"); // TODO:fix
     core.sys.posix.unistd.close(tryOpen);
 
     loadConf();
@@ -66,10 +60,10 @@ class Collection {
     auto oldConfig = readText(configFileName);
     std.file.write(configBackup, cast(ubyte[])oldConfig);
 
-    if (conf.indexes.length != 0) {
+    if (configs.length != 0) {
       string[] tmp;
-      for (int i; i < conf.indexes.length; ++i) {
-	tmp ~= toJSON(&(conf.indexes[i]));
+      for (int i; i < configs.length; ++i) {
+	tmp ~= toJSON(&(configs[i]));
       }
       std.file.write(configFileName, tmp.join("\n"));
     }
@@ -79,15 +73,15 @@ class Collection {
   void loadConf() {
     auto tmp = readText(configFileName);
     if (to!string(tmp) != "") {
-      conf.indexes = [];
+      configs = [];
       auto jsonConf = tmp.split("\n");
       foreach (c; jsonConf) {
-	conf.indexes ~= parseJSON(c);
+	configs ~= parseJSON(c);
       }
     }
-    conf.indexes ~= parseJSON(`{"fname":"_uid", "perBucket":200, "hashBits":14, "indexedPath":["_uid"]}`);
+    configs ~= parseJSON(`{"fname":"_uid", "perBucket":200, "hashBits":14, "indexedPath":["_uid"]}`);
 
-    foreach (i, index; conf.indexes) {
+    foreach (i, index; configs) {
       auto obj = index.object;
       auto ht = new HashTable(buildPath(dir, obj["fname"].str), 
 			      cast(uint) obj["hashBits"].uinteger,
