@@ -4,6 +4,7 @@ import rikkadb.collection;
 
 import std.conv;
 import std.file;
+import std.path;
 import std.stdio;
 import std.string;
 
@@ -19,7 +20,7 @@ class RikkaDB {
 
     foreach (string f; dirEntries(dir, SpanMode.breadth)) {
       if (isDir(f)) {
-	strCol[f] = new Collection([dir, f].join("/"));
+	strCol[f] = new Collection(buildPath(dir, f));
       }
       // Successfully opened collection
     }
@@ -31,7 +32,7 @@ class RikkaDB {
       writeln("already exists");
       return;
     }
-    strCol[name] = new Collection([dir, name].join("/"));
+    strCol[name] = new Collection(buildPath(dir, name));
   }
 
   // return collection
@@ -47,7 +48,7 @@ class RikkaDB {
     if (name in strCol) {
       strCol[name].close();
       strCol.remove(name);
-      rmdirRecurse([dir, name].join("/"));
+      rmdirRecurse(buildPath(dir, name));
     } else {
       writeln("There's no collection such name.");
     }
