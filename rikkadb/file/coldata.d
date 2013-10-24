@@ -18,6 +18,14 @@ immutable ubyte[2048] PADDING;
 immutable uint LEN_PADDING = PADDING.length;
 
 
+// exception class for when given document is too large
+class DocumentTooLarge : Exception {
+  this(string msg) {
+    super(msg);
+  }
+}
+
+
 class ColData {
 
   FileData f;
@@ -59,8 +67,7 @@ class ColData {
     uint len = data.length;
     uint room = len + len;
     if (room >= DOC_MAX_ROOM) {
-      return 0;
-      //raise
+      throw new DocumentTooLarge("Document is too large");
     }
     docInsertMutex.lock;
     scope(exit) docInsertMutex.unlock;
@@ -125,8 +132,7 @@ class ColData {
 
     uint room = cast(uint) ubytesToUlong(f.buf[id+1 .. id+11]);
     if (room > DOC_MAX_ROOM) {
-      // raise
-      return id;
+      throw new DocumentTooLarge("Document is too large");
     } else {
       if (len <= room) {
 	// overwrite data
@@ -294,4 +300,4 @@ unittest {
 }
 
 
-//version(unittest) void main() {};
+version(unittest) void main() {};
