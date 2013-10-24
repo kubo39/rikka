@@ -10,7 +10,6 @@ import std.format;
 import std.json;
 import std.path;
 import std.string;
-import std.typecons;
 import core.sys.posix.fcntl;
 import core.sys.posix.unistd;
 import core.sys.posix.sys.stat;
