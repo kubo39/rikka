@@ -44,8 +44,13 @@ void embeddedExample() {
   JSONValue updatedJsonDoc = parseJSON(updatedDoc);
   auto newID = colA.update(id, updatedJsonDoc);
   auto ret = colA.read(newID);
-  // writeln(toJSON(&ret));
   assert(ret.object["b"].str == "abcdefghijklmnopqrstuvwxyz");
+
+  // show all documents
+  colA.forAll((uint id, JSONValue doc) {
+      writeln(id, ": ", toJSON(&doc));
+      return true;
+    });
 
   // delete document
   colA.del(newID);
