@@ -138,7 +138,6 @@ class HashTable {
 
     while (true) {
       uint entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
-      // writeln(entryAddr);
 
       if (f.buf[entryAddr] != ENTRY_VALID) {
 	f.buf[entryAddr] = ENTRY_VALID;
