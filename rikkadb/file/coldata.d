@@ -8,9 +8,9 @@ import core.sync.mutex;
 import core.sync.rwmutex;
 
 
-immutable uint COL_FILE_GROWTH    = 134217728;  // Grows every 128MB
+immutable uint COL_FILE_GROWTH      = 134217728;  // Grows every 128MB
 immutable uint DOC_MAX_ROOM         = 33554432;  // Maximum single document size
-uint DOC_HEADER                     = 1 + 10;    // byte(validity), ulong(document room)
+immutable uint DOC_HEADER           = 1 + 10;    // byte(validity), ulong(document room)
 immutable ubyte DOC_VALID           = 1;
 immutable ubyte DOC_INVALID         = 0;
 immutable uint COL_FILE_REGION_SIZE = 1024 * 512; // 512 KB per locking region
