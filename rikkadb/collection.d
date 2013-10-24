@@ -151,20 +151,15 @@ class Collection {
     unindexDoc(id, oldDoc);
   }
 
-  // Apply function for all documents (deserialized into generic interface)
+  // Apply function for all documents
   void forAll(bool delegate(uint, JSONValue) func) {
     data.forAll((uint id, ubyte[] jsonData) {
-  	JSONValue parsed;
-  	try {
-  	  parsed = parseJSON(jsonData);
-  	} catch {
-  	  return true;
-  	}
+	JSONValue parsed = parseJSON(jsonData);
   	return func(id, parsed);
       });
   }
 
-  // Flush collection data files.
+  // Flush collection data files
   void flush() {
     data.f.flush();
     foreach (ht; strHT) {
