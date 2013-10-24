@@ -26,6 +26,14 @@ class DocumentTooLarge : Exception {
 }
 
 
+// exception class for when document does not exist in the collection
+class DocumentNotExist : Exception {
+  this(string msg) {
+    super(msg);
+  }
+}
+
+
 class ColData {
 
   FileData f;
@@ -127,7 +135,7 @@ class ColData {
     scope(exit) m.reader.unlock;
 
     if (f.buf[id] != DOC_VALID) {
-      // raise
+      throw new DocumentNotExist("Document does not exist in");
     }
 
     uint room = cast(uint) ubytesToUlong(f.buf[id+1 .. id+11]);
@@ -300,4 +308,4 @@ unittest {
 }
 
 
-version(unittest) void main() {};
+//version(unittest) void main() {};
