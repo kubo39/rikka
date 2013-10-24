@@ -26,6 +26,14 @@ uint jsonToHash(JSONValue thing) {
 }
 
 
+// exception class for fail to open file
+class FailedOpenFileException : Exception {
+  this(string msg) {
+    super(msg);
+  }
+}
+
+
 // collection class
 class Collection {
 
@@ -48,7 +56,10 @@ class Collection {
     data = new ColData(buildPath(dir, "data"));
 
     // make sure the config file exists
-    auto tryOpen = open(configFileName.toStringz, O_CREAT|O_RDWR, octal!"600"); // TODO:fix
+    auto tryOpen = open(configFileName.toStringz, O_CREAT|O_RDWR, octal!"600");
+    if (tryOpen < 0) {
+      throw new FailedOpenFileException("Failed to open config file");
+    }
     core.sys.posix.unistd.close(tryOpen);
 
     loadConf();
