@@ -159,6 +159,7 @@ class ColData {
 	  }
 	  f.buf[segBegin .. segEnd] = PADDING[0 .. segSize];
 	}
+	return id;  // only doc replaced
       }
       // re-insert because there is not enough room
       del(id);
@@ -264,7 +265,7 @@ unittest {
     updated[0] = col.update(ids[0], cast(ubyte[])"abcdef");
     updated[1] = col.update(ids[1], cast(ubyte[])"longlonglonglonglong");
 
-    assert(updated[0] != ids[0]);
+    assert(updated[0] == ids[0]);
     assert(updated[1] != ids[1]);
 
     auto doc0 = col.read(updated[0]);
