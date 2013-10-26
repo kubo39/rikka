@@ -12,7 +12,7 @@ import std.string;
 class RikkaDB {
 
   string dir;
-  Collection[string] strCol;
+  Collection[string] collections;
 
   this(string _dir) {
     mkdirRecurse(_dir);
@@ -20,7 +20,7 @@ class RikkaDB {
 
     foreach (string f; dirEntries(dir, SpanMode.breadth)) {
       if (isDir(f)) {
-	strCol[f] = new Collection(buildPath(dir, f));
+	collections[f] = new Collection(buildPath(dir, f));
       }
       // Successfully opened collection
     }
@@ -28,26 +28,26 @@ class RikkaDB {
 
   // Create a new collection
   void create(string name) {
-    if (name in strCol) {
+    if (name in collections) {
       writeln("already exists");
       return;
     }
-    strCol[name] = new Collection(buildPath(dir, name));
+    collections[name] = new Collection(buildPath(dir, name));
   }
 
   // return collection
   Collection use(string name) {
-    if (name in strCol) {
-      return strCol[name];
+    if (name in collections) {
+      return collections[name];
     }
     return null;
   }
 
   // drop a collection
   void drop(string name) {
-    if (name in strCol) {
-      strCol[name].close();
-      strCol.remove(name);
+    if (name in collections) {
+      collections[name].close();
+      collections.remove(name);
       rmdirRecurse(buildPath(dir, name));
     } else {
       writeln("There's no collection such name.");
@@ -56,14 +56,14 @@ class RikkaDB {
 
   // Flush all collection data files
   void flush() {
-    foreach(col; strCol) {
+    foreach(col; collections) {
       col.flush();
     }
   }
 
   // close all collections
   void close() {
-    foreach (col; strCol) {
+    foreach (col; collections) {
       col.close();
     }
   }
@@ -98,7 +98,7 @@ unittest {
     // drop
     db.drop("a");
 
-    assert(db.strCol.keys == ["b"]);
+    assert(db.collections.keys == ["b"]);
 
     db.flush();
   }

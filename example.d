@@ -24,7 +24,7 @@ void embeddedExample() {
   db.create("B");
 
   // show collections
-  foreach (i, name; db.strCol) {
+  foreach (i, name; db.collections) {
     writeln("collection ", i, " ", name);
   }
 
