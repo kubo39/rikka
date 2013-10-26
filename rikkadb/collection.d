@@ -108,7 +108,7 @@ class Collection {
     foreach (seg; path) {
       auto aMap = thing.object;
       if (seg in aMap) {
-	if (aMap[seg].init == JSONValue.init) // TODO: fix, it's bug
+	if (is(aMap[seg] == JSONValue))
 	  thing = aMap[seg];
       }
     }
