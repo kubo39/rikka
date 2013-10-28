@@ -143,6 +143,13 @@ class Collection {
     return id;
   }
 
+  // insert document and flush all bufs
+  uint durableInsert(JSONValue doc) {
+    auto id = insert(doc);
+    flush();
+    return id;
+  }
+
   uint update(uint id, JSONValue doc) {
     auto newData = toJSON(&doc);
 
@@ -155,10 +162,23 @@ class Collection {
     return newID;
   }
 
+  // update document and fush all bufs
+  uint durableUpdate(uint id, JSONValue doc) {
+    auto newID = update(id, doc);
+    flush();
+    return newID;
+  }
+
   void del(uint id) {
     JSONValue oldDoc = read(id);
     data.del(id);
     unindexDoc(id, oldDoc);
+  }
+
+  // delete document and flush all bufs
+  void durableDelete(uint id) {
+    del(id);
+    flush();
   }
 
   // Apply function for all documents
@@ -296,9 +316,57 @@ unittest {
     assert(doc2.object["b"].uinteger == 2);
   }
 
+  void testDurableInsertUpdateDelete() {
+    if (exists(tmp) && isDir(tmp)) {
+      rmdirRecurse(tmp);
+    }
+    scope(exit) {
+      if (exists(tmp) && isDir(tmp)) {
+	rmdirRecurse(tmp);
+      }
+    }
+
+    auto col = new Collection(tmp);
+    scope(exit) col.close();
+
+    auto docs = [`{"a": 1}`, `{"b": 2}`];
+    JSONValue[2] jsonDoc;
+    jsonDoc[0] = parseJSON(docs[0]);
+    jsonDoc[1] = parseJSON(docs[1]);
+
+    auto updatedDocs = [`{"a": 2}`, `{"b": "abcdefghijklmnopqrstuvwxyz"}`];
+    JSONValue[2] updatedJsonDoc;
+    updatedJsonDoc[0] = parseJSON(updatedDocs[0]);
+    updatedJsonDoc[1] = parseJSON(updatedDocs[1]);
+
+    uint[2] ids;
+    ids[0] = col.durableInsert(jsonDoc[0]);
+    ids[1] = col.durableInsert(jsonDoc[1]);
+
+    ids[0] = col.durableUpdate(ids[0], updatedJsonDoc[0]);
+    ids[1] = col.durableUpdate(ids[1], updatedJsonDoc[1]);
+
+    col.durableDelete(12345);
+
+    JSONValue doc1 = col.read(ids[0]);
+    JSONValue doc2 = col.read(ids[1]);
+
+    assert(doc1.object["a"].integer == 2);
+    assert(doc2.object["b"].str == "abcdefghijklmnopqrstuvwxyz");
+
+    int counter;
+    col.forAll((uint id, JSONValue doc) {
+	counter++;
+	return true;
+      });
+
+    assert(counter == 2);
+  }
+
   testInsertRead();
   testInsertUpdateReadAll();
   testInsertDeleteRead();
+  testDurableInsertUpdateDelete();
 }
 
 
