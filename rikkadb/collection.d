@@ -137,6 +137,7 @@ class Collection {
     }
   }
 
+  // insert new document
   uint insert(JSONValue doc) {
     uint id = data.insert(cast(ubyte[])toJSON(&doc));
     indexDoc(id, doc);
@@ -150,6 +151,7 @@ class Collection {
     return id;
   }
 
+  // update document
   uint update(uint id, JSONValue doc) {
     auto newData = toJSON(&doc);
 
@@ -169,6 +171,7 @@ class Collection {
     return newID;
   }
 
+  // delete document
   void del(uint id) {
     JSONValue oldDoc = read(id);
     data.del(id);
