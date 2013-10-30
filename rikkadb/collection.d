@@ -65,7 +65,7 @@ class Collection {
     loadConf();
   }
 
-  // Copy existing config file content to backup config file
+  // copy existing config file content to backup config file
   void backupAndSaveConf() {
     auto oldConfig = readText(configFileName);
     std.file.write(configBackup, cast(ubyte[])oldConfig);
@@ -137,21 +137,21 @@ class Collection {
     }
   }
 
-  // insert new document
+  // insert a new document
   uint insert(JSONValue doc) {
     uint id = data.insert(cast(ubyte[])toJSON(&doc));
     indexDoc(id, doc);
     return id;
   }
 
-  // insert document and flush all bufs
+  // insert a document and flush all bufs
   uint durableInsert(JSONValue doc) {
     auto id = insert(doc);
     flush();
     return id;
   }
 
-  // update document
+  // update a document
   uint update(uint id, JSONValue doc) {
     auto newData = toJSON(&doc);
 
@@ -164,27 +164,27 @@ class Collection {
     return newID;
   }
 
-  // update document and fush all bufs
+  // update a document and fush all bufs
   uint durableUpdate(uint id, JSONValue doc) {
     auto newID = update(id, doc);
     flush();
     return newID;
   }
 
-  // delete document
+  // delete a document
   void del(uint id) {
     JSONValue oldDoc = read(id);
     data.del(id);
     unindexDoc(id, oldDoc);
   }
 
-  // delete document and flush all bufs
+  // delete a document and flush all bufs
   void durableDelete(uint id) {
     del(id);
     flush();
   }
 
-  // Apply function for all documents
+  // apply function for all documents
   void forAll(bool delegate(uint, JSONValue) func) {
     data.forAll((uint id, ubyte[] jsonData) {
 	JSONValue parsed = parseJSON(jsonData);
@@ -192,7 +192,7 @@ class Collection {
       });
   }
 
-  // Flush collection data files
+  // flush collection data files
   void flush() {
     data.f.flush();
     foreach (ht; strHT) {
