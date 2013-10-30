@@ -50,7 +50,7 @@ class ColData {
   }
 
   ubyte[] read(uint id) {
-    if (id < 0 || id >= f.append) {
+    if (id < 0 || id >= f.append - DOC_HEADER) {
       return null;
     }
     auto region = id / COL_FILE_REGION_SIZE;
