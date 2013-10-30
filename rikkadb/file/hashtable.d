@@ -68,12 +68,12 @@ class HashTable {
     if (bucketAddr < 0 || bucketAddr >= f.buf.length - BUCKET_HEADER_SIZE) {
       return 0;
     } else {
-      uint next = cast(uint) ubytesToUlong(f.buf[bucketAddr .. bucketAddr+cast(uint)BUCKET_HEADER_SIZE]);
+      uint next = cast(uint) ubytesToUlong(f.buf[bucketAddr .. bucketAddr+BUCKET_HEADER_SIZE]);
       if (next != 0 && next <= bucket) {
-	writeln("Loop detected in hashtable %s at bucket %d", f.name, bucket);
+	writefln("Loop detected in hashtable %s at bucket %d", f.name, bucket);
 	return 0;
       } else if (next >= f.append - BUCKET_HEADER_SIZE) {
-	writeln("Bucket reference out of bound in hashtable %s at bucket %d", f.name, bucket);
+	writefln("Bucket reference out of bound in hashtable %s at bucket %d", f.name, bucket);
 	return 0;
       } else {
 	return next;
