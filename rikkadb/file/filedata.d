@@ -36,24 +36,10 @@ class FileData {
     buf = cast(ubyte[]) mmap[0 .. uint.max];
 
     // find append position
-    for(uint low = 0, mid = size/2, high = size;;) {
-      if (high-mid == 1) {
-    	if (buf[mid] == 0) {
-    	  if (buf[mid-1] == 0) {
-    	    append = mid - 1;
-    	  } else {
-    	    append = mid;
-    	  }
-    	  break;
-    	}
-    	append = high;
-    	break;
-      } else if (buf[mid] == 0) {
-    	high = mid;
-    	mid = low + (mid-low)/2;
-      } else {
-    	low = mid;
-    	mid = mid + (high-mid)/2;
+    for (uint pos = size -1; pos > 0; pos--) {
+      if (buf[pos] != 0) {
+	append = pos + 1;
+	break;
       }
     }
   }
