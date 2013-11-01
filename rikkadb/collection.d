@@ -73,7 +73,7 @@ class Collection {
     if (configs.length != 0) {
       string[] tmp;
       for (int i; i < configs.length; ++i) {
-	tmp ~= toJSON(&(configs[i]));
+        tmp ~= toJSON(&(configs[i]));
       }
       std.file.write(configFileName, tmp.join("\n"));
     }
@@ -86,7 +86,7 @@ class Collection {
       configs = [];
       auto jsonConf = tmp.split("\n");
       foreach (c; jsonConf) {
-	configs ~= parseJSON(c);
+        configs ~= parseJSON(c);
       }
     }
     configs ~= parseJSON(`{"fname":"_uid", "perBucket":200, "hashBits":14, "indexedPath":["_uid"]}`);
@@ -94,8 +94,8 @@ class Collection {
     foreach (i, index; configs) {
       auto obj = index.object;
       auto ht = new HashTable(buildPath(dir, obj["fname"].str), 
-			      cast(uint) obj["hashBits"].uinteger,
-			      cast(uint) obj["perBucket"].uinteger);
+                              cast(uint) obj["hashBits"].uinteger,
+                              cast(uint) obj["perBucket"].uinteger);
       auto k = to!(string[])(toJSON(&obj["indexedPath"])).join(",");
       strHT[k] = ht;
       strIC[k] = index;
@@ -108,8 +108,8 @@ class Collection {
     foreach (seg; path) {
       auto aMap = thing.object;
       if (seg in aMap) {
-	if (is(aMap[seg] == JSONValue))
-	  thing = aMap[seg];
+        if (is(aMap[seg] == JSONValue))
+          thing = aMap[seg];
       }
     }
     return [thing];
@@ -123,7 +123,7 @@ class Collection {
   void indexDoc(uint id, JSONValue doc) {
     foreach (k, v; strIC) {
       foreach (thing; getIn(doc, to!(string[])(toJSON(&(v.object["indexedPath"]))))) {
-	strHT[k].put(jsonToHash(thing), id);
+        strHT[k].put(jsonToHash(thing), id);
       }
     }
   }
@@ -132,7 +132,7 @@ class Collection {
   void unindexDoc(uint id, JSONValue doc) {
     foreach (k, v; strIC) {
       foreach (thing; getIn(doc, to!(string[])(toJSON(&(v.object["indexedPath"]))))) {
-	strHT[k].remove(jsonToHash(thing), 1, (uint k, uint v) { return v == id; });
+        strHT[k].remove(jsonToHash(thing), 1, (uint k, uint v) { return v == id; });
       }
     }
   }
@@ -187,8 +187,8 @@ class Collection {
   // apply function for all documents
   void forAll(bool delegate(uint, JSONValue) func) {
     data.forAll((uint id, ubyte[] jsonData) {
-	JSONValue parsed = parseJSON(jsonData);
-  	return func(id, parsed);
+        JSONValue parsed = parseJSON(jsonData);
+        return func(id, parsed);
       });
   }
 
@@ -219,7 +219,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp) && isDir(tmp)) {
-	rmdirRecurse(tmp);
+        rmdirRecurse(tmp);
       }
     }
 
@@ -248,7 +248,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp) && isDir(tmp)) {
-	rmdirRecurse(tmp);
+        rmdirRecurse(tmp);
       }
     }
 
@@ -280,8 +280,8 @@ unittest {
 
     int counter;
     col.forAll((uint id, JSONValue doc) {
-	counter++;
-	return true;
+        counter++;
+        return true;
       });
 
     assert(counter == 2);
@@ -293,7 +293,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp) && isDir(tmp)) {
-	rmdirRecurse(tmp);
+        rmdirRecurse(tmp);
       }
     }
 
@@ -325,7 +325,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp) && isDir(tmp)) {
-	rmdirRecurse(tmp);
+        rmdirRecurse(tmp);
       }
     }
 
@@ -359,8 +359,8 @@ unittest {
 
     int counter;
     col.forAll((uint id, JSONValue doc) {
-	counter++;
-	return true;
+        counter++;
+        return true;
       });
 
     assert(counter == 2);

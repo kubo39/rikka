@@ -70,13 +70,13 @@ class HashTable {
     } else {
       uint next = cast(uint) ubytesToUlong(f.buf[bucketAddr .. bucketAddr+BUCKET_HEADER_SIZE]);
       if (next != 0 && next <= bucket) {
-	writefln("Loop detected in hashtable %s at bucket %d", f.name, bucket);
-	return 0;
+        writefln("Loop detected in hashtable %s at bucket %d", f.name, bucket);
+        return 0;
       } else if (next >= f.append - BUCKET_HEADER_SIZE) {
-	writefln("Bucket reference out of bound in hashtable %s at bucket %d", f.name, bucket);
-	return 0;
+        writefln("Bucket reference out of bound in hashtable %s at bucket %d", f.name, bucket);
+        return 0;
       } else {
-	return next;
+        return next;
       }
     }
   }
@@ -87,7 +87,7 @@ class HashTable {
     while (true) {
       uint next = nextBucket(curr);
       if (next == 0) {
-	return curr;
+        return curr;
       }
       curr = next;
     }
@@ -102,19 +102,19 @@ class HashTable {
     if (!(f.checkSize(bucketSize))) {
       ReadWriteMutex[] originalMutexes = regionRWMutex;
       foreach (region; originalMutexes) {
-	region.reader.lock;
+        region.reader.lock;
       }
       f.checkSizeAndEnsure(bucketSize);
       // make more mutexes
       ReadWriteMutex[] moreMutexes;
       moreMutexes.length = HASH_TABLE_GROWTH/HASH_TABLE_REGION_SIZE+1;
       for (int i; i < moreMutexes.length; ++i) {
-	moreMutexes[i] = new ReadWriteMutex;
+        moreMutexes[i] = new ReadWriteMutex;
       }
       // merge mutexes together
       regionRWMutex ~= moreMutexes;
       foreach (region; originalMutexes) {
-	region.reader.unlock;
+        region.reader.unlock;
       }
     }
     uint lastBucketAddr = lastBucket(bucket) * bucketSize;
@@ -140,22 +140,22 @@ class HashTable {
       uint entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
 
       if (f.buf[entryAddr] != ENTRY_VALID) {
-	f.buf[entryAddr] = ENTRY_VALID;
-	putUlongToUbytes(f.buf[entryAddr+1 .. entryAddr+11], key);
-	putUlongToUbytes(f.buf[entryAddr+11 .. entryAddr+21], val);
-	break;
+        f.buf[entryAddr] = ENTRY_VALID;
+        putUlongToUbytes(f.buf[entryAddr+1 .. entryAddr+11], key);
+        putUlongToUbytes(f.buf[entryAddr+11 .. entryAddr+21], val);
+        break;
       }
       entry++;
       if (entry == perBucket) {
-	entry = 0;
-	bucket = nextBucket(bucket);
-	if (bucket == 0) {
-	  grow(hashKey(key));
-	  put(key, val);
-	  break;
-	}
-	region = bucket / HASH_TABLE_REGION_SIZE;
-	m = regionRWMutex[region];
+        entry = 0;
+        bucket = nextBucket(bucket);
+        if (bucket == 0) {
+          grow(hashKey(key));
+          put(key, val);
+          break;
+        }
+        region = bucket / HASH_TABLE_REGION_SIZE;
+        m = regionRWMutex[region];
       }
     }
   }
@@ -178,26 +178,26 @@ class HashTable {
       uint entryKey = cast(uint)ubytesToUlong(f.buf[entryAddr+1 .. entryAddr+11]);
       uint entryVal = cast(uint)ubytesToUlong(f.buf[entryAddr+11 .. entryAddr+21]);
       if (f.buf[entryAddr] == ENTRY_VALID) {
-	if (entryKey == key && filter(entryKey, entryVal)) {
-	  keys ~= entryKey;
-	  vals ~= entryVal;
-	  count++;
-	  if (count == limit) {
-	    return tuple(keys, vals);
-	  }
-	}
+        if (entryKey == key && filter(entryKey, entryVal)) {
+          keys ~= entryKey;
+          vals ~= entryVal;
+          count++;
+          if (count == limit) {
+            return tuple(keys, vals);
+          }
+        }
       } else if (entryKey == 0 || entryVal == 0) {
-	return tuple(keys, vals);
+        return tuple(keys, vals);
       }
       entry++;
       if (entry == perBucket) {
-	entry = 0;
-	bucket = nextBucket(bucket);
-	if (bucket == 0) {
-	  return tuple(keys, vals);
-	}
-	region = bucket / HASH_TABLE_REGION_SIZE;
-	m = regionRWMutex[region];
+        entry = 0;
+        bucket = nextBucket(bucket);
+        if (bucket == 0) {
+          return tuple(keys, vals);
+        }
+        region = bucket / HASH_TABLE_REGION_SIZE;
+        m = regionRWMutex[region];
       }
     }
   }
@@ -218,25 +218,25 @@ class HashTable {
       uint entryKey = cast(uint)ubytesToUlong(f.buf[entryAddr+1 .. entryAddr+11]);
       uint entryVal = cast(uint)ubytesToUlong(f.buf[entryAddr+11 .. entryAddr+21]);
       if (f.buf[entryAddr] == ENTRY_VALID) {
-	if (entryKey == key && filter(entryKey, entryVal)) {
-	  f.buf[entryAddr] = ENTRY_INVALID;
-	  count++;
-	  if (count == limit) {
-	    return;
-	  }
-	}
+        if (entryKey == key && filter(entryKey, entryVal)) {
+          f.buf[entryAddr] = ENTRY_INVALID;
+          count++;
+          if (count == limit) {
+            return;
+          }
+        }
       } else if (entryKey == 0 || entryVal == 0) {
-	return;
+        return;
       }
       entry++;
       if (entry == perBucket) {
-	entry = 0;
-	bucket = nextBucket(bucket);
-	if (bucket == 0) {
-	  return;
-	}
-	region = bucket / HASH_TABLE_REGION_SIZE;
-	m = regionRWMutex[region];
+        entry = 0;
+        bucket = nextBucket(bucket);
+        if (bucket == 0) {
+          return;
+        }
+        region = bucket / HASH_TABLE_REGION_SIZE;
+        m = regionRWMutex[region];
       }
     }
   }
@@ -255,29 +255,29 @@ class HashTable {
       scope(exit) m.reader.unlock;
 
       while (true) {
-	auto entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
-	uint entryKey = cast(uint)ubytesToUlong(f.buf[entryAddr+1 .. entryAddr+11]);
-	uint entryVal = cast(uint)ubytesToUlong(f.buf[entryAddr+11 .. entryAddr+21]);
-	if (f.buf[entryAddr] == ENTRY_VALID) {
-	  counter++;
-	  keys ~= entryKey;
-	  vals ~= entryVal;
-	  if (counter == limit) {
-	    break;
-	  }
-	} else if (entryKey == 0 || entryVal == 0) {
-	  break;
-	}
-	entry++;
-	if (entry == perBucket) {
-	  entry = 0;
-	  bucket = nextBucket(bucket);
-	  if (bucket == 0) {
-	    break;
-	  }
-	  region = bucket / HASH_TABLE_REGION_SIZE;
-	  m = regionRWMutex[region];
-	}
+        auto entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
+        uint entryKey = cast(uint)ubytesToUlong(f.buf[entryAddr+1 .. entryAddr+11]);
+        uint entryVal = cast(uint)ubytesToUlong(f.buf[entryAddr+11 .. entryAddr+21]);
+        if (f.buf[entryAddr] == ENTRY_VALID) {
+          counter++;
+          keys ~= entryKey;
+          vals ~= entryVal;
+          if (counter == limit) {
+            break;
+          }
+        } else if (entryKey == 0 || entryVal == 0) {
+          break;
+        }
+        entry++;
+        if (entry == perBucket) {
+          entry = 0;
+          bucket = nextBucket(bucket);
+          if (bucket == 0) {
+            break;
+          }
+          region = bucket / HASH_TABLE_REGION_SIZE;
+          m = regionRWMutex[region];
+        }
       }
     }
     return tuple(keys, vals);
@@ -305,7 +305,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp)) {
-	remove(tmp);
+        remove(tmp);
       }
     }
   
@@ -334,7 +334,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp)) {
-	remove(tmp);
+        remove(tmp);
       }
     }
 
@@ -369,7 +369,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp)) {
-	remove(tmp);
+        remove(tmp);
       }
     }
 
@@ -408,7 +408,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp)) {
-	remove(tmp);
+        remove(tmp);
       }
     }
 

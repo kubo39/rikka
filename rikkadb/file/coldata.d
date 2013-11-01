@@ -85,19 +85,19 @@ class ColData {
     if (!(f.checkSize(DOC_HEADER + room))) {
       auto originalMutexes = regionRWMutex;
       foreach (region; originalMutexes) {
-	region.reader.lock;
+        region.reader.lock;
       }
       f.checkSizeAndEnsure(DOC_HEADER + room);
       // make more mutexes
       ReadWriteMutex[] moreMutexes;
       moreMutexes.length = COL_FILE_GROWTH/COL_FILE_REGION_SIZE+1;
       for (int i; i < moreMutexes.length; ++i) {
-	moreMutexes[i] = new ReadWriteMutex;
+        moreMutexes[i] = new ReadWriteMutex;
       }
       // merge mutexes together
       regionRWMutex ~= moreMutexes;
       foreach (region; originalMutexes) {
-	region.reader.unlock;
+        region.reader.unlock;
       }
     }
     // reposition next append
@@ -117,8 +117,8 @@ class ColData {
       uint segEnd = segBegin + LEN_PADDING;
 
       if (segEnd >= paddingEnd) {
-	segEnd = paddingEnd;
-	segSize = paddingEnd - segBegin;
+        segEnd = paddingEnd;
+        segSize = paddingEnd - segBegin;
       }
       f.buf[segBegin .. segEnd] = PADDING[0 .. segSize];
     }
@@ -143,23 +143,23 @@ class ColData {
       throw new DocumentTooLarge("Document is too large");
     } else {
       if (len <= room) {
-	// overwrite data
-	uint paddingBegin = id + DOC_HEADER + len;
-	f.buf[id+DOC_HEADER .. paddingBegin] = data.idup;
-	uint paddingEnd = id + DOC_HEADER + room;
+        // overwrite data
+        uint paddingBegin = id + DOC_HEADER + len;
+        f.buf[id+DOC_HEADER .. paddingBegin] = data.idup;
+        uint paddingEnd = id + DOC_HEADER + room;
 
-	// overwrite padding
-	for (uint segBegin = paddingBegin; segBegin < paddingEnd; segBegin += LEN_PADDING) {
-	  uint segSize = LEN_PADDING;
-	  uint segEnd = segBegin + LEN_PADDING;
+        // overwrite padding
+        for (uint segBegin = paddingBegin; segBegin < paddingEnd; segBegin += LEN_PADDING) {
+          uint segSize = LEN_PADDING;
+          uint segEnd = segBegin + LEN_PADDING;
 
-	  if (segEnd >= paddingEnd) {
-	    segEnd = paddingEnd;
-	    segSize = paddingEnd - segBegin;
-	  }
-	  f.buf[segBegin .. segEnd] = PADDING[0 .. segSize];
-	}
-	return id;  // only doc replaced
+          if (segEnd >= paddingEnd) {
+            segEnd = paddingEnd;
+            segSize = paddingEnd - segBegin;
+          }
+          f.buf[segBegin .. segEnd] = PADDING[0 .. segSize];
+        }
+        return id;  // only doc replaced
       }
       // re-insert because there is not enough room
       del(id);
@@ -187,7 +187,7 @@ class ColData {
     uint addr = 0;
     while (true) {
       if (addr >= f.append) {
-	break;
+        break;
       }
       uint region = addr / COL_FILE_REGION_SIZE;
       auto m = regionRWMutex[region];
@@ -198,14 +198,14 @@ class ColData {
       uint room = cast(uint) ubytesToUlong(f.buf[addr+1 .. addr+11]);
 
       if (validity != DOC_VALID && validity != DOC_INVALID || room > DOC_MAX_ROOM) {
-	addr++;
-	for (; f.buf[addr] != DOC_VALID && f.buf[addr] != DOC_INVALID; addr++) {
-	}
-	continue;
+        addr++;
+        for (; f.buf[addr] != DOC_VALID && f.buf[addr] != DOC_INVALID; addr++) {
+        }
+        continue;
       }
 
       if (validity == DOC_VALID && !func(addr, f.buf[addr+DOC_HEADER .. addr+DOC_HEADER+room])) {
-	break;
+        break;
       }
       addr += DOC_HEADER + room;
     }
@@ -225,7 +225,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp)) {
-	remove(tmp);
+        remove(tmp);
       }
     }
 
@@ -248,7 +248,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp)) {
-	remove(tmp);
+        remove(tmp);
       }
     }
 
@@ -281,7 +281,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp)) {
-	remove(tmp);
+        remove(tmp);
       }
     }
 

@@ -20,7 +20,7 @@ class RikkaDB {
 
     foreach (string f; dirEntries(dir, SpanMode.breadth)) {
       if (isDir(f)) {
-	collections[f] = new Collection(buildPath(dir, f));
+        collections[f] = new Collection(buildPath(dir, f));
       }
       // Successfully opened collection
     }
@@ -80,7 +80,7 @@ unittest {
     }
     scope(exit) {
       if (exists(tmp) && isDir(tmp)) {
-	rmdirRecurse(tmp);
+        rmdirRecurse(tmp);
       }
     }
 
