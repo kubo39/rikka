@@ -17,6 +17,7 @@ void embeddedExample() {
     }
   }
 
+  // create database
   auto db = new RikkaDB(dir);
 
   // Create collection
@@ -35,13 +36,11 @@ void embeddedExample() {
   auto colA = db.use("A");
 
   // insert document
-  auto doc = `{"a": 1}`;
-  JSONValue jsonDoc = parseJSON(doc);
+  JSONValue jsonDoc = parseJSON(`{"a": 1}`);
   uint id = colA.insert(jsonDoc);
 
   // update document
-  auto updatedDoc = `{"b": "abcdefghijklmnopqrstuvwxyz"}`;
-  JSONValue updatedJsonDoc = parseJSON(updatedDoc);
+  JSONValue updatedJsonDoc = parseJSON(`{"b": "abcdefghijklmnopqrstuvwxyz"}`);
   auto newID = colA.update(id, updatedJsonDoc);
   auto ret = colA.read(newID);
   assert(ret.object["b"].str == "abcdefghijklmnopqrstuvwxyz");
