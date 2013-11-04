@@ -33,14 +33,14 @@ ulong ubytesToUlong(ubyte[] buf) {
 
 
 class BufferOverflow : Exception {
-  this(string name) {
+  pure this(string name) {
     super(name);
   }
 }
 
 
 class BufferTooSmall : Exception {
-  this(string name) {
+  pure this(string name) {
     super(name);
   }
 }

@@ -28,7 +28,7 @@ uint jsonToHash(JSONValue thing) {
 
 // exception class for fail to open file
 class FailedOpenFileException : Exception {
-  this(string msg) {
+  pure this(string msg) {
     super(msg);
   }
 }

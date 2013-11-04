@@ -20,7 +20,7 @@ immutable uint LEN_PADDING = PADDING.length;
 
 // exception class for when given document is too large
 class DocumentTooLarge : Exception {
-  this(string msg) {
+  pure this(string msg) {
     super(msg);
   }
 }
@@ -28,7 +28,7 @@ class DocumentTooLarge : Exception {
 
 // exception class for when document does not exist in the collection
 class DocumentNotExist : Exception {
-  this(string msg) {
+  pure this(string msg) {
     super(msg);
   }
 }
