@@ -288,7 +288,7 @@ class HashTable {
 
 // class for raise exception when invalid parameter given
 class InvalidHashTableParameterException : Exception {
-  this(string msg){
+  pure this(string msg){
     super(msg);
   }
 }
