@@ -58,6 +58,7 @@ class HashTable {
   }
 
   // Return total number of buckets
+  @property
   uint numberBuckets() {
     return f.append / bucketSize;
   }
