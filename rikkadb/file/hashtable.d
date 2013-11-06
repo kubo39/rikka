@@ -58,6 +58,7 @@ class HashTable {
   }
 
   // Return total number of buckets
+  @property
   uint numberBuckets() {
     return f.append / bucketSize;
   }
@@ -118,7 +119,7 @@ class HashTable {
       }
     }
     uint lastBucketAddr = lastBucket(bucket) * bucketSize;
-    putUlongToUbytes(f.buf[lastBucketAddr .. lastBucketAddr+8], cast(ulong) numberBuckets());
+    putUlongToUbytes(f.buf[lastBucketAddr .. lastBucketAddr+8], cast(ulong) numberBuckets);
     f.append += bucketSize;
   }
 
@@ -130,7 +131,7 @@ class HashTable {
   // Put a new key-value pair
   void put(uint key, uint val) {
     uint bucket = hashKey(key);
-    uint entry = 0L;
+    uint entry = 0;
     uint region = bucket / HASH_TABLE_REGION_SIZE;
     ReadWriteMutex m = regionRWMutex[region];
     m.reader.lock;
