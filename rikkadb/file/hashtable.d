@@ -18,7 +18,7 @@ immutable uint BUCKET_HEADER_SIZE = 10;  // next bucket
 immutable uint HASH_TABLE_REGION_SIZE = 1024 * 4; // 4KB per locking region
 
 
-// HashTable class, ulong-typed key-value pairs
+// HashTable class, uint-typed key-value pairs
 class HashTable {
 
   FileData f;
