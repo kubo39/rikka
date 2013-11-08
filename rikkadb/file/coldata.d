@@ -85,7 +85,7 @@ class ColData {
     if (!(f.checkSize(DOC_HEADER + room))) {
       auto originalMutexes = regionRWMutex;
       foreach (region; originalMutexes) {
-        region.reader.lock;
+        region.writer.lock;
       }
       f.checkSizeAndEnsure(DOC_HEADER + room);
       // make more mutexes
@@ -97,7 +97,7 @@ class ColData {
       // merge mutexes together
       regionRWMutex ~= moreMutexes;
       foreach (region; originalMutexes) {
-        region.reader.unlock;
+        region.writer.unlock;
       }
     }
     // reposition next append
