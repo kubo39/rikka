@@ -103,7 +103,7 @@ class HashTable {
     if (!(f.checkSize(bucketSize))) {
       ReadWriteMutex[] originalMutexes = regionRWMutex;
       foreach (region; originalMutexes) {
-        region.reader.lock;
+        region.writer.lock;
       }
       f.checkSizeAndEnsure(bucketSize);
       // make more mutexes
@@ -115,7 +115,7 @@ class HashTable {
       // merge mutexes together
       regionRWMutex ~= moreMutexes;
       foreach (region; originalMutexes) {
-        region.reader.unlock;
+        region.writer.unlock;
       }
     }
     uint lastBucketAddr = lastBucket(bucket) * bucketSize;
@@ -134,8 +134,8 @@ class HashTable {
     uint entry = 0;
     uint region = bucket / HASH_TABLE_REGION_SIZE;
     ReadWriteMutex m = regionRWMutex[region];
-    m.reader.lock;
-    scope(exit) m.reader.unlock;
+    m.writer.lock;
+    scope(exit) m.writer.unlock;
 
     while (true) {
       uint entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
@@ -211,8 +211,8 @@ class HashTable {
 
     auto region = bucket / HASH_TABLE_REGION_SIZE;
     auto m = regionRWMutex[region];
-    m.reader.lock;
-    scope(exit) m.reader.unlock;
+    m.writer.lock;
+    scope(exit) m.writer.unlock;
 
     while (true) {
       auto entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
