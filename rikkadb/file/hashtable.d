@@ -135,7 +135,6 @@ class HashTable {
     uint region = bucket / HASH_TABLE_REGION_SIZE;
     ReadWriteMutex m = regionRWMutex[region];
     m.writer.lock;
-    scope(exit) m.writer.unlock;
 
     while (true) {
       uint entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
@@ -144,10 +143,12 @@ class HashTable {
         f.buf[entryAddr] = ENTRY_VALID;
         putUlongToUbytes(f.buf[entryAddr+1 .. entryAddr+11], key);
         putUlongToUbytes(f.buf[entryAddr+11 .. entryAddr+21], val);
+        m.writer.unlock;
         break;
       }
       entry++;
       if (entry == perBucket) {
+        m.writer.unlock;
         entry = 0;
         bucket = nextBucket(bucket);
         if (bucket == 0) {
@@ -157,6 +158,7 @@ class HashTable {
         }
         region = bucket / HASH_TABLE_REGION_SIZE;
         m = regionRWMutex[region];
+        m.writer.lock;
       }
     }
   }
@@ -212,7 +214,6 @@ class HashTable {
     auto region = bucket / HASH_TABLE_REGION_SIZE;
     auto m = regionRWMutex[region];
     m.writer.lock;
-    scope(exit) m.writer.unlock;
 
     while (true) {
       auto entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
@@ -223,14 +224,17 @@ class HashTable {
           f.buf[entryAddr] = ENTRY_INVALID;
           count++;
           if (count == limit) {
+            m.writer.unlock;
             return;
           }
         }
       } else if (entryKey == 0 || entryVal == 0) {
+        m.writer.unlock;
         return;
       }
       entry++;
       if (entry == perBucket) {
+        m.writer.unlock;
         entry = 0;
         bucket = nextBucket(bucket);
         if (bucket == 0) {
@@ -238,6 +242,7 @@ class HashTable {
         }
         region = bucket / HASH_TABLE_REGION_SIZE;
         m = regionRWMutex[region];
+        m.writer.lock;
       }
     }
   }
