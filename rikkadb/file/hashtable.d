@@ -174,7 +174,6 @@ class HashTable {
     auto region = bucket / HASH_TABLE_REGION_SIZE;
     auto m = regionRWMutex[region];
     m.reader.lock;
-    scope(exit) m.reader.unlock;
 
     while (true) {
       auto entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
@@ -186,14 +185,17 @@ class HashTable {
           vals ~= entryVal;
           count++;
           if (count == limit) {
+            m.reader.unlock;
             return tuple(keys, vals);
           }
         }
       } else if (entryKey == 0 || entryVal == 0) {
+        m.reader.unlock;
         return tuple(keys, vals);
       }
       entry++;
       if (entry == perBucket) {
+        m.reader.unlock;
         entry = 0;
         bucket = nextBucket(bucket);
         if (bucket == 0) {
@@ -201,6 +203,7 @@ class HashTable {
         }
         region = bucket / HASH_TABLE_REGION_SIZE;
         m = regionRWMutex[region];
+        m.reader.lock;
       }
     }
   }
@@ -258,7 +261,6 @@ class HashTable {
       uint region = bucket / HASH_TABLE_REGION_SIZE;
       auto m = regionRWMutex[region];
       m.reader.lock;
-      scope(exit) m.reader.unlock;
 
       while (true) {
         auto entryAddr = bucket*bucketSize + BUCKET_HEADER_SIZE + entry*ENTRY_SIZE;
@@ -269,13 +271,16 @@ class HashTable {
           keys ~= entryKey;
           vals ~= entryVal;
           if (counter == limit) {
+            m.reader.unlock;
             break;
           }
         } else if (entryKey == 0 || entryVal == 0) {
+          m.reader.unlock;
           break;
         }
         entry++;
         if (entry == perBucket) {
+          m.reader.unlock;
           entry = 0;
           bucket = nextBucket(bucket);
           if (bucket == 0) {
@@ -283,6 +288,7 @@ class HashTable {
           }
           region = bucket / HASH_TABLE_REGION_SIZE;
           m = regionRWMutex[region];
+          m.reader.lock;
         }
       }
     }
