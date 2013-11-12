@@ -66,7 +66,7 @@ class ColData {
     if (room > DOC_MAX_ROOM) {
       return null;
     } else {
-      return cast(ubyte[])(f.buf[id+DOC_HEADER .. id+room+DOC_HEADER].idup);
+      return f.buf[id+DOC_HEADER .. id+room+DOC_HEADER].dup;
     }
   }
 

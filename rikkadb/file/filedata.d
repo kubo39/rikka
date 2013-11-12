@@ -38,8 +38,8 @@ class FileData {
     // find append position
     for (uint pos = size -1; pos > 0; pos--) {
       if (buf[pos] != 0) {
-	append = pos + 1;
-	break;
+        append = pos + 1;
+        break;
       }
     }
   }
