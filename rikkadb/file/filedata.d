@@ -63,9 +63,9 @@ class FileData {
     for (uint i = 0; i < growth; i+= FILE_GROWTH_INCREMENTAL) {
       ubyte[] slice;
       if (i > growth) {
-	slice = zeroBuf[0 .. growth];
+        slice = zeroBuf[0 .. growth];
       } else {
-	slice = zeroBuf;
+        slice = zeroBuf;
       }
       core.sys.posix.unistd.write(f, slice, growth);
     }

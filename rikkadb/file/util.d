@@ -21,7 +21,7 @@ ulong ubytesToUlong(ubyte[] buf) {
   foreach (i, b; buf) {
     if (b < 0x80) {
       if (i > 9 || i == 9 && b > 1) {
-	throw new BufferOverflow("value larger than 64 bits");
+        throw new BufferOverflow("value larger than 64 bits");
       }
       return x | (cast(ulong) b) << s;
     }
