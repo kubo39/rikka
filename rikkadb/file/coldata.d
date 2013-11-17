@@ -50,7 +50,7 @@ class ColData {
   }
 
   ubyte[] read(uint id) {
-    if (id < 0 || id >= f.append - DOC_HEADER) {
+    if (f.append < DOC_HEADER || id >= f.append - DOC_HEADER) {
       return null;
     }
     auto region = id / COL_FILE_REGION_SIZE;
@@ -169,7 +169,7 @@ class ColData {
 
   // delete document
   void del(uint id) {
-    if (id < 0) {
+    if (f.append < DOC_HEADER || id >= f.append - DOC_HEADER) {
       return;
     }
     uint region = id / COL_FILE_REGION_SIZE;
