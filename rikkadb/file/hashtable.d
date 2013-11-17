@@ -29,7 +29,7 @@ class HashTable {
   ReadWriteMutex[] regionRWMutex;
 
   this(string name, uint _hashBits, uint _perBucket) {
-    if (_hashBits < 1 || _perBucket < 1) {
+    if (_hashBits < 2 || _perBucket < 2) {
       throw new InvalidHashTableParameterException("Invalid hash table parameter!");
     }
 
