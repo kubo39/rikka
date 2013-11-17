@@ -127,6 +127,10 @@ class ColData {
 
   // update document
   uint update(uint id, ubyte[] data) {
+    if (f.append < DOC_HEADER || id >= f.append - DOC_HEADER) {
+      throw new DocumentNotExist("Document does not exist in");
+    }
+
     uint len = data.length;
     uint region = id / COL_FILE_REGION_SIZE;
 
