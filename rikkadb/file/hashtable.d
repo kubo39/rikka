@@ -446,6 +446,3 @@ unittest {
   testPutRemove();
   testGetAll();
 }
-
-
-//version(unittest) void main() {}

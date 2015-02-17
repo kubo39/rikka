@@ -72,7 +72,7 @@ class ColData {
 
   // insert document
   uint insert(ubyte[] data) {
-    uint len = data.length;
+      uint len = cast(uint) data.length;
     uint room = len + len;
     if (room >= DOC_MAX_ROOM) {
       throw new DocumentTooLarge("Document is too large");
@@ -131,7 +131,7 @@ class ColData {
       throw new DocumentNotExist("Document does not exist in");
     }
 
-    uint len = data.length;
+    uint len = cast(uint) data.length;
     uint region = id / COL_FILE_REGION_SIZE;
 
     auto m = regionRWMutex[region];
@@ -311,6 +311,3 @@ unittest {
   testInsertUpdateRead();
   testInsertDeleteRead();
 }
-
-
-//version(unittest) void main() {};

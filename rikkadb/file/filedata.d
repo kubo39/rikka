@@ -67,7 +67,7 @@ class FileData {
       } else {
         slice = zeroBuf;
       }
-      core.sys.posix.unistd.write(f, slice, growth);
+      core.sys.posix.unistd.write(f, cast(const void*)slice, growth);
     }
     fsync(f);
 
@@ -130,6 +130,3 @@ unittest {
   tmpFile3.close();
   delete tmpFile3;
 }
-
-
-//version(unittest) void main() {}
