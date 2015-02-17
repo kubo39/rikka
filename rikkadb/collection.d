@@ -5,6 +5,7 @@ import rikkadb.file.hashtable;
 
 import std.array;
 import std.conv;
+import std.exception;
 import std.file;
 import std.format;
 import std.json;
@@ -82,8 +83,8 @@ class Collection {
   // load configuration to collection
   void loadConf() {
     auto tmp = readText(configFileName);
+    JSONValue[] configs = [];
     if (to!string(tmp) != "") {
-      configs = [];
       auto jsonConf = tmp.split("\n");
       foreach (c; jsonConf) {
         configs ~= parseJSON(c);
@@ -94,8 +95,8 @@ class Collection {
     foreach (i, index; configs) {
       auto obj = index.object;
       auto ht = new HashTable(buildPath(dir, obj["fname"].str), 
-                              cast(uint) obj["hashBits"].uinteger,
-                              cast(uint) obj["perBucket"].uinteger);
+                              cast(uint) obj["hashBits"].integer,
+                              cast(uint) obj["perBucket"].integer);
       auto k = to!(string[])(toJSON(&obj["indexedPath"])).join(",");
       strHT[k] = ht;
       strIC[k] = index;
@@ -103,16 +104,14 @@ class Collection {
   }
 
   JSONValue[] getIn(JSONValue doc, string[] path) {
-    JSONValue thing = doc;
-
     foreach (seg; path) {
-      auto aMap = thing.object;
+      auto aMap = doc.object;
       if (seg in aMap) {
         if (is(aMap[seg] == JSONValue))
-          thing = aMap[seg];
+          doc = aMap[seg];
       }
     }
-    return [thing];
+    return [doc];
   }
 
   JSONValue read(uint id) {
@@ -226,17 +225,12 @@ unittest {
     auto col = new Collection(tmp);
     scope(exit) col.close;
 
-    auto docs = [`{"a": 1}`, `{"b": 2}`];
-    JSONValue[2] jsonDoc;
-    jsonDoc[0] = parseJSON(docs[0]);
-    jsonDoc[1] = parseJSON(docs[1]);
-
     uint[2] ids;
-    ids[0] = col.insert(jsonDoc[0]);
-    ids[1] = col.insert(jsonDoc[1]);
+    ids[0] = col.insert(parseJSON(`{"a": 1}`));
+    ids[1] = col.insert(parseJSON(`{"b": 2}`));
 
-    auto doc1 = col.read(ids[0]);
-    auto doc2 = col.read(ids[1]);
+    JSONValue doc1 = col.read(ids[0]);
+    JSONValue doc2 = col.read(ids[1]);
 
     assert(doc1.object["a"].integer == 1);
     assert(doc2.object["b"].integer == 2);
@@ -316,7 +310,7 @@ unittest {
     assert(doc1.type == JSON_TYPE.NULL);
 
     JSONValue doc2 = col.read(ids[1]);
-    assert(doc2.object["b"].uinteger == 2);
+    assert(doc2.object["b"].integer == 2);
   }
 
   void testDurableInsertUpdateDelete() {
@@ -349,7 +343,7 @@ unittest {
     ids[0] = col.durableUpdate(ids[0], updatedJsonDoc[0]);
     ids[1] = col.durableUpdate(ids[1], updatedJsonDoc[1]);
 
-    col.durableDelete(12345);
+    assertThrown!JSONException(col.durableDelete(12345), "Throw JSONValue Exception when reference deleted cols.");
 
     JSONValue doc1 = col.read(ids[0]);
     JSONValue doc2 = col.read(ids[1]);
@@ -371,6 +365,3 @@ unittest {
   testInsertDeleteRead();
   testDurableInsertUpdateDelete();
 }
-
-
-//version(unittest) void main() {}

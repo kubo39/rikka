@@ -2,7 +2,7 @@ module rikkadb.file.util;
 
 
 // encodes a ulong into buf
-void putUlongToUbytes(ref ubyte[] buf, ulong x) {
+void putUlongToUbytes(ubyte[] buf, ulong x) {
   int i;
   while (x >= 0x80) {
     buf[i] = cast(ubyte) x | 0x80;
