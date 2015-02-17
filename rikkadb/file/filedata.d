@@ -96,12 +96,12 @@ unittest {
   import std.file;
   auto tmp = "/tmp/rikka_file_test";
 
-  if (exists(tmp)) {
-    remove(tmp);
+  if ( tmp.exists() ) {
+    tmp.remove();
   }
   scope(exit) {
-    if (exists(tmp)) {
-      remove(tmp);
+    if ( tmp.exists() ) {
+      tmp.remove();
     }
   }
 
@@ -116,17 +116,14 @@ unittest {
 
   assert(tmpFile.buf[1] == cast(ubyte)'2');
   tmpFile.close();
-  delete tmpFile;
 
   auto tmpFile2 = new FileData(tmp, 1000);
   assert(tmpFile2.append == 10);
   tmpFile2.buf[10] = cast(ubyte)'b';
   tmpFile2.close();
-  delete tmpFile2;
 
   auto tmpFile3 = new FileData(tmp, 1000);
   assert(tmpFile3.append == 11);
   assert(tmpFile3.buf[0 .. 11] == cast(ubyte[])"1234567890b");
   tmpFile3.close();
-  delete tmpFile3;
 }

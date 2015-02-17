@@ -67,6 +67,3 @@ unittest {
   f(257L);
   f(1L<<63-1);
 }
-
-
-// version(unittest) void main() {}

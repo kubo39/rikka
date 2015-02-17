@@ -8,12 +8,12 @@ import std.stdio;
 void embeddedExample() {
   auto dir = "/tmp/MyDatabase";
 
-  if (exists(dir)) {
-    rmdirRecurse(dir);
+  if ( dir.exists() ) {
+    dir.rmdirRecurse();
   }
   scope(exit) {
-    if (exists(dir)) {
-      rmdirRecurse(dir);
+    if ( dir.exists() ) {
+      dir.rmdirRecurse();
     }
   }
 

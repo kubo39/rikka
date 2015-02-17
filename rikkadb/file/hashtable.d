@@ -312,12 +312,12 @@ unittest {
   void testPutGet() {
     auto tmp = "/tmp/rikka_hash_test";
 
-    if (exists(tmp)) {
-      remove(tmp);
+    if ( tmp.exists() ) {
+      tmp.remove();
     }
     scope(exit) {
-      if (exists(tmp)) {
-        remove(tmp);
+      if ( tmp.exists() ) {
+        tmp.remove();
       }
     }
   
@@ -341,12 +341,12 @@ unittest {
   void testPutGet2() {
     auto tmp = "/tmp/rikka_hash_test";
 
-    if (exists(tmp)) {
-      remove(tmp);
+    if ( tmp.exists() ) {
+      tmp.remove();
     }
     scope(exit) {
-      if (exists(tmp)) {
-        remove(tmp);
+      if ( tmp.exists() ) {
+        tmp.remove();
       }
     }
 
@@ -376,12 +376,12 @@ unittest {
   void testPutRemove() {
     auto tmp = "/tmp/rikka_hash_test";
 
-    if (exists(tmp)) {
-      remove(tmp);
+    if ( tmp.exists() ) {
+      tmp.remove();
     }
     scope(exit) {
-      if (exists(tmp)) {
-        remove(tmp);
+      if ( tmp.exists() ) {
+        tmp.remove();
       }
     }
 
@@ -415,12 +415,12 @@ unittest {
   void testGetAll() {
     auto tmp = "/tmp/rikka_hash_test";
 
-    if (exists(tmp)) {
-      remove(tmp);
+    if ( tmp.exists() ) {
+      tmp.remove();
     }
     scope(exit) {
-      if (exists(tmp)) {
-        remove(tmp);
+      if ( tmp.exists() ) {
+        tmp.remove();
       }
     }
 

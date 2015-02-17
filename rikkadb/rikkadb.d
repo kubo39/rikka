@@ -75,12 +75,12 @@ unittest {
   string tmp = "/tmp/rikka_db_test";
 
   void testCUD() {
-    if (exists(tmp) && isDir(tmp)) {
-      rmdirRecurse(tmp);
+    if ( tmp.exists() && tmp.isDir() ) {
+      tmp.rmdirRecurse();
     }
     scope(exit) {
-      if (exists(tmp) && isDir(tmp)) {
-        rmdirRecurse(tmp);
+      if ( tmp.exists() && tmp.isDir() ) {
+        tmp.rmdirRecurse();
       }
     }
 
@@ -105,6 +105,3 @@ unittest {
 
   testCUD();
 }
-
-
-//version(unittest) void main() {}

@@ -213,12 +213,12 @@ unittest {
   string tmp = "/tmp/rikka_col_test";
 
   void testInsertRead() {
-    if (exists(tmp) && isDir(tmp)) {
-      rmdirRecurse(tmp);
+    if ( tmp.exists() && tmp.isDir() ) {
+      tmp.rmdirRecurse();
     }
     scope(exit) {
-      if (exists(tmp) && isDir(tmp)) {
-        rmdirRecurse(tmp);
+      if ( tmp.exists() && tmp.isDir() ) {
+        tmp.rmdirRecurse();
       }
     }
 
@@ -237,12 +237,12 @@ unittest {
   }
 
   void testInsertUpdateReadAll() {
-    if (exists(tmp) && isDir(tmp)) {
-      rmdirRecurse(tmp);
+    if ( tmp.exists() && tmp.isDir() ) {
+      tmp.rmdirRecurse();
     }
     scope(exit) {
-      if (exists(tmp) && isDir(tmp)) {
-        rmdirRecurse(tmp);
+      if ( tmp.exists() && tmp.isDir() ) {
+        tmp.rmdirRecurse();
       }
     }
 
@@ -282,12 +282,12 @@ unittest {
   }
 
   void testInsertDeleteRead() {
-    if (exists(tmp) && isDir(tmp)) {
-      rmdirRecurse(tmp);
+    if ( tmp.exists() && tmp.isDir() ) {
+      tmp.rmdirRecurse();
     }
     scope(exit) {
-      if (exists(tmp) && isDir(tmp)) {
-        rmdirRecurse(tmp);
+      if ( tmp.exists() && tmp.isDir() ) {
+        tmp.rmdirRecurse();
       }
     }
 
@@ -314,12 +314,12 @@ unittest {
   }
 
   void testDurableInsertUpdateDelete() {
-    if (exists(tmp) && isDir(tmp)) {
-      rmdirRecurse(tmp);
+    if ( tmp.exists() && tmp.isDir() ) {
+      tmp.rmdirRecurse();
     }
     scope(exit) {
-      if (exists(tmp) && isDir(tmp)) {
-        rmdirRecurse(tmp);
+      if ( tmp.exists() && tmp.isDir() ) {
+        tmp.rmdirRecurse();
       }
     }
 
